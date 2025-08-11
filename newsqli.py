@@ -49,7 +49,12 @@ def form_details(form):
     for select_tag in form.find_all("select"):
         input_name = select_tag.attrs.get("name")
         options = [option.attrs.get("value", "") for option in select_tag.find_all("option")]
-        inputs.append({"type": "select", "name": input_name, "value": options[0]})  # Default to first option
+        # Some select elements may not contain any options. In such cases the
+        # previous implementation attempted to access the first element of the
+        # list which raised an ``IndexError``.  Default to an empty string when
+        # no options are available to avoid crashing during form parsing.
+        default_value = options[0] if options else ""
+        inputs.append({"type": "select", "name": input_name, "value": default_value})
 
     detailsOfForm['action'] = action
     detailsOfForm['method'] = method
